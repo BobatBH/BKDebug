@@ -11,7 +11,7 @@ You can think of the macros as a replacement for `assert()`. That is, where you 
 
 For example, a common usage is to check the validity of function arguments:
 
-```C++
+```
 #include "BKDebug.h"
 
 void foo(int bar)
@@ -54,7 +54,7 @@ in **BKDebug**.
 Specifies that this code is enabled in the Debug build. You can write code that will only be compiled in the Debug build by using the preprocessor to check if
 `_BK_DEBUG_` is defined. For example:
 
-```C++
+```
 #if defined(_BK_DEBUG_)    // #ifdef _BK_DEBUG_ would work as well
     int debug_counter = 0;
 
@@ -74,7 +74,7 @@ This is the reciprocal of `_BK_DEBUG_` in that it tells the compiler to include 
 
 When `_BK_DEBUG_` is defined, all calls are expanded at the point of every call, so expect your application to be larger and slower in the Debug build than the Release build; such is the nature of macros.
 
-**Note**: You can only declare `_BK_DEBUG_` or `_BK_RELEASE_` at any one time, never both at the same time.  (A build error will occur if you try to.) If `_BK_DEBUG_` is not defined, `_BK_RELEASE_` is _not_ implied or assumed; it simply means that no debugging features or code will be enabled.
+**Note**: You can only declare `_BK_DEBUG_` or `_BK_RELEASE_` at any one time, never both at the same time.  (A build error will occur if you try to.) If `_BK_DEBUG_` is not defined, `_BK_RELEASE_` is _not_ implied or assumed; it merely means that no debugging features or code will be enabled.
 
 
 # Platform Types
@@ -100,9 +100,9 @@ I do have a version locally that uses `NSLog()` internally and allows `@` use as
 
 <h2>_BK_DISABLE_CHECK_BREAKPOINTS_</h2>
 
-By default, any check that fires will stop the debugger (if it's running). However, you can disable this by defining `_BK_DISABLE_CHECK_BREAKPOINTS_` before the first `#include/#import` of `BKDebug.h`'. You can add it to your build settings if you wish. (See below.)
+By default, any check that fires will stop the debugger (if it's running). You can disable this by defining `_BK_DISABLE_CHECK_BREAKPOINTS_` before the first `#include/#import` of `BKDebug.h`'. You can add it to your build settings if you wish. (See below.)
 
-```Objective-C
+```
 #define _BK_DISABLE_CHECK_BREAKPOINTS_
 #import "BKDebug.h"
 ```
@@ -116,11 +116,11 @@ There are two ways to declare preprocessor defines: as a build setting, and via 
 
 The easiest — and arguably preferred — way to declare them is by using build settings usually (easily done in your IDE). Each build type gets a unique set of build options. For example, here is how you would do it in Xcode for an iOS application:
 
-![Setting build settings in Xcode](http://bobkoon.com/githubsupport/bkdebug_xcodepreprocessorsetting.png)
+![Build settings in Xcode](http://bobkoon.com/githubsupport/bkdebug_xcodepreprocessorsetting.png)
 
 You can also define them programmatically. Like so:
 
-```Objective-C
+```
 #define _BK_IOS_
 #define _BK_DEBUG_
 #import "BKDebug.h"
@@ -131,7 +131,7 @@ You can also define them programmatically. Like so:
 
 I have made every effort to make sure **BKDebug** builds cleanly. It doesn't generate any warnings when building and no hits are generated from static analyzers (see the Windows note below).
 
-In order to achieve this, I had to turn off a warning (_very_ temporarily; just for one line of code and it's immediately turned on again) for Clang to get the value of the expressions displaying in a type-agnostic way.
+In order to achieve this, I had to turn off a warning (_very_ temporarily; for just one line of code and it's immediately turned on again) for Clang to get the value of the expressions displaying in a type-agnostic way.
 
 **Windows Note**: When I run the analyzer in Visual Studio (2005, that's the only version I own, alas) each macro generates a hit. This is caused by the same line that I need to disable the warning for in Clang. The reason it's a problem (for VS2005) because it doesn't know what to do with `_Pragma()` and `#pragma` isn't usable in this case because it's all pre-processor. Indeed, that's why `_Pragma()` was created. If you are able to test this in a newer version of VS, please feel free to submit a pull request. (And thank you!) Even if a newer version does handle `_Pragma()` correctly, it still requires a change because the options given to it is Clang only. I am willing to update this myself, but I would need to know what arguments to use for the `_Pragma()` calls.
 
@@ -140,7 +140,7 @@ In order to achieve this, I had to turn off a warning (_very_ temporarily; just 
 
 I use these macros _everywhere_ in my application, especially for validating function arguments. Typically something like this:
 
-```C++
+```
 void displayString(char * string)
 {
     BKDEBUG_CHECK_NOTEQUAL(string, NULL, "bad pointer");
@@ -150,9 +150,9 @@ void displayString(char * string)
 }
 ```
 
-However, doing this only tells me about immediate (development-time) problems. If I were to finish the routine like this:
+Doing this only tells me about immediate (development-time) problems. If I were to finish the routine like this:
 
-```C++
+```
 void displayString(char * string)
 {
     BKDEBUG_CHECK_NOTEQUAL(string, NULL, "bad pointer");
@@ -164,7 +164,7 @@ void displayString(char * string)
 
 I couldn't (indeed, _shouldn't_) call this production code because it would crash in the Release build when string is NULL. I still have to do something like this:
 
-```C++
+```
 void displayString(char * string)
 {
     BKDEBUG_CHECK_NOTEQUAL(string, NULL, "bad pointer");
@@ -179,7 +179,7 @@ void displayString(char * string)
 
 Or something like this (which is what I prefer to do):
 
-```C++
+```
 void displayString(char * string)
 {
     BKDEBUG_CHECK_NOTEQUAL(string, NULL, "bad pointer");
@@ -197,9 +197,9 @@ void displayString(char * string)
 
 # Call Tracing
 
-Another handy use of **BKDebug** is tracing the route of the calls that your application makes. The `BKDEBUG_MESSAGE()` macro (see below) is perfect for this. Simply add it to the start of the routine and it will display it in the console log. Like so:
+Another handy use of **BKDebug** is tracing the route of the calls that your application makes. The `BKDEBUG_MESSAGE()` macro (see below) is perfect for this. Add it to the start of the routine and it will display it in the console log. Like so:
 
-```C++
+```
 void displayString(char * string)
 {
     BKDEBUG_CHECK_NOTEQUAL(string, NULL, "bad pointer");
@@ -213,7 +213,7 @@ void displayString(char * string)
 
 You could even take it further and give yourself more information about the arguments given to the routine:
 
-```C++
+```
 void displayString(char * string)
 {
     BKDEBUG_CHECK_NOTEQUAL(string, NULL, "bad pointer");
@@ -244,7 +244,7 @@ Check an expression for "truth".
     <td><code>expression</code></td><td>the expression you want to validate</td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with one argument)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with one argument)</td>
   </tr>
 </table>
 
@@ -252,7 +252,7 @@ Check an expression for "truth".
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK((value == 0) || (value == 1));
 ```
 
@@ -273,13 +273,13 @@ This macro evaluates two expressions and checks their results for equality, i.e.
     <td><code>right_expression</code></td><td>the expression on the right side of the =</td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with two arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with two arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_EQUAL(first_memblock, NULL, "some memory hasn't been freed");
 ```
 
@@ -300,13 +300,13 @@ This macro evaluates two expressions and checks their results for inequality, i.
     <td><code>right_expression</code></td><td>the expression on the right side of the !=</td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with two arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with two arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_NOTEQUAL(num_bytes, 0, "trying to allocate a size of 0");
 ```
 
@@ -327,13 +327,13 @@ This macro evaluates two expressions and checks if `left_expression` is less tha
     <td><code>right_expression</code></td><td>the expression on the right side of the <</td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with two arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with two arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_LESSTHAN(timer_id, num_timers, "timer_id is too large");
 ```
 
@@ -354,13 +354,13 @@ This macro evaluates two expressions and checks if `left_expression` is greater 
     <td><code>right_expression</code></td><td>the expression on the right side of the ></td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with two arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with two arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_GREATERTHAN(timer_id, -1, "timer_id is too small");
 ```
 
@@ -381,13 +381,13 @@ This macro evaluates two expressions and checks if `left_expression` is less tha
     <td><code>right_expression</code></td><td>the expression on the right side of the <=</td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with two arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with two arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_LESSTHANEQUAL(frame_data->m_x2, 1.0f);
 ```
 
@@ -408,13 +408,13 @@ This macro evaluates two expressions and checks if `left_expression` is greater 
     <td><code>right_expression</code></td><td>the expression on the right side of the >=</td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with two arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with two arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_GREATERTHANEQUAL(string_id, getFirstStringID(), "string_id is too low");
 ```
 
@@ -438,13 +438,13 @@ This macro evaluates two expressions and checks that `left_expression` is equal 
     <td><code>tolerance</code></td><td>the 'range' of acceptable differences to <code>right_expression</code></td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with three arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with three arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_WITHINRANGE(num_active_objects, 10, 2);   // 8 <-> 12
 ```
 
@@ -470,13 +470,13 @@ This macro evaluates two expressions and checks if `left_expression` is equal to
     <td><code>tolerance</code></td><td>the 'range' of acceptable differences to <code>right_expression</code></td>
   </tr>
   <tr>
-    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, just call the macro with three arguments)</td>
+    <td><code>message</code></td><td>an optional message that is displayed if the check fails (if you don't want a message, call the macro with three arguments)</td>
   </tr>
 </table>
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CHECK_WITHINRANGE_FLOAT(sine_value, 0.0f, 1.0f);   // -1.0 <-> 1.0
 ```
 
@@ -485,7 +485,7 @@ BKDEBUG_CHECK_WITHINRANGE_FLOAT(sine_value, 0.0f, 1.0f);   // -1.0 <-> 1.0
 
 Display a `printf()`-style message to the debugging console.
 
-This is simply a wrapper for `printf()` that allows you to see messages in the console as the program runs. Call it as you would call `printf()`.
+This is a wrapper for `printf()` that allows you to see messages in the console as the program runs. Call it as you would call `printf()`.
 
 **Usage:** `BKDEBUG_MESSAGE(format, ...);`
 
@@ -494,7 +494,7 @@ This is simply a wrapper for `printf()` that allows you to see messages in the c
 
 Halt execution and interrupt the debugger as if a breakpoint was triggered.
 
-This macro can be thought of as a software breakpoint. Simply add a call to anywhere in your code and start the debugger. The code will stop once the macro is reached.
+This macro can be thought of as a software breakpoint. Inject this call anywhere in your code and start the debugger. The code will stop once the macro is reached.
 
 **Usage:** `BKDEBUG_BREAKPOINT();`
 
@@ -517,7 +517,7 @@ This macro is a way to inject code in the Debug build. You can declare any code 
 
 **Example:**
 
-```C++
+```
 BKDEBUG_CODE(int debug_test = 0);      // the variable is declared here
 
 /* production code here */
@@ -538,7 +538,7 @@ Check a static array at compile time for validity.
 
 ### Example usage:
 
-```C++
+```
 enum ColorID
 {
     kColorIDNone,
@@ -571,7 +571,7 @@ When this macro fires, you will get a build error on the `BKDEBUG_COMPILETIME_AR
 
 You might be asking why this kind of macro is needed at all. Consider this...
 
-```C++
+```
 const char * const  color_table[kNumColorIDs] =
 {
     "kColorIDRed",
@@ -581,13 +581,13 @@ const char * const  color_table[kNumColorIDs] =
 BKDEBUG_COMPILETIME_ARRAY_CHECK(staticarray_count(color_table) == kNumColorIDs, array_count_doesnt_match_enum_count);
 ```
 
-This is clearly not the intent of the author, but it builds quietly. Why?
+This was not the intent of the author, but it builds quietly. Why?
 
 The array has an explicit size so the compiler creates an entry at each index. After it does this, the size of the array _does_ match the number of entries. (In this case, the `kNumColorIDs` enum.)
 
 To further point out the kinds of errors this can cause, take a look at this code:
 
-```C++
+```
 const int num_array_elements = staticarray_count(color_table);
 for (int i = 0; i < num_array_elements; i++)
 {
@@ -606,7 +606,7 @@ kColorIDBlue
 
 To prevent all of these potential problems, you can create your array like so:
 
-```C++
+```
 const char * const  color_table[] =
 {
     "kColorIDNone",
@@ -640,7 +640,7 @@ This macro returns the number of elements in a static array.
 
 **Example:**
 
-```C++
+```
 const int num_array_elements = staticarray_count(color_table);
 for (int i = 0; i < num_array_elements; i++)
 {
@@ -661,9 +661,9 @@ merged16
 merged8
 ```
 
-It is probably easier to understand how these types work by looking at an example:
+It might be easier to understand how these types work by looking at an example:
 
-```C++
+```
 merged32    data;
 
 data.m_u32      = 0;    // clear all the bits
